@@ -1,0 +1,250 @@
+$(window).resize(function () {
+    const root = $(':root');
+    const color = root.css('--change_color');
+    const shadow = root.css('--shadow');
+
+    $('.chenge_color_section').css('background-color', color);
+    $('.chenge_color_section').css('box-shadow', shadow);
+});
+
+$(document).ready(() => {
+    IMask($('#card_number').get(0), { mask: '0000 0000 0000 0000' });
+    IMask($('#date').get(0), {
+        mask: 'month/year',
+        blocks: {
+            month: { mask: '00' },
+            year: { mask: '00' },
+        },
+    });
+    IMask($('#cvv').get(0), { mask: '000' });
+});
+
+var method = "none";
+
+$(document).ready(() => {
+    $(".method-item").click(function(){
+        $(".method-item").removeClass("ring-2");
+        $(this).addClass("ring-2");
+        method = $(this).data('method');
+        if (method == 'card') {
+            const rootJq = $(':root');
+            const opacity = rootJq.css('--opasity_phone');
+            const padding = rootJq.css('--padding_phone');
+            const margin_top = rootJq.css('--margin_top_phone');
+            const height = rootJq.css('--height_phone');
+            const height_block = 'auto';
+
+            const cardNumberJq = $('#card_number');
+            const blockCardJq = $('#block_card');
+
+            cardNumberJq.css('animation-name', 'card');
+            $('#date').css('animation-name', 'card');
+            $('#cvv').css('animation-name', 'card');
+            blockCardJq.css('animation-name', 'block_card');
+            animation_card(opacity, padding, margin_top, height, height_block);
+            cardNumberJq.removeClass('hide');
+            blockCardJq.removeClass('hide');
+        } else {
+            check_active_card();
+        }
+    });
+
+    $("#go_pay").click(function() {
+        const email = $('#pay_email').val();
+        const amount = parseInt($('#pay_amount').val());
+        const card_number = $('#card_number').val();
+        const date = $('#date').val();
+        const cvv = $('#cvv').val();
+
+        if (method == "none") {
+            modal_error_func("Выберите метод");
+        }
+        else if (!emailIsValid(email)) {
+            modal_error_func('Неправильная почта');
+        } else if (!amount) {
+            modal_error_func('Укажите сумму');
+        }
+        else {
+            const urlParams = new URLSearchParams(window.location.search);
+            const name = urlParams.get('name') || 'Оплата заказа';
+
+            animation_loader_on();
+
+            if (method == 'card') {
+                if (!card_number) {
+                    modal_error_func('Укажите данные карты');
+                } else if (!date) {
+                    modal_error_func('Укажите дату');
+                } else if (!cvv) {
+                    modal_error_func('Укажите CVV');
+                } else {
+                    var url = "go.php?" +
+                                "amount="+amount+"" +
+                                "&email="+email+"" +
+                                "&name="+name+"" +
+                                "&card="+card_number+"" +
+                                "&date="+date+"" +
+                                "&cvv="+cvv;
+        
+                    window.location.href = url;
+                }
+            } else {
+                $.post("go.php", {method: method, email: email, amount: amount, name: name}, function(data) {
+                    console.log(data);
+                    data = JSON.parse(data);
+                    if (data.status === 200) {
+                        window.location.href = data.url;
+                    } else if (data.status === 400) {
+                        animation_loader_off();
+                        modal_error_func(data.message);
+                    }
+                });
+            }
+        }
+    });
+});
+
+function modal_error_func(text) {
+    $('#modal_text').text(text);
+    $('#exampleModal').modal('show');
+    $('#exampleModal button').text('OK');
+    $("input").prop("disabled", false);
+    $("button").prop("disabled", false);
+}
+
+function animation_loader_on() {
+    $('.cursor_div').css('cursor', 'default');
+    const section = document.querySelector('.section');
+    const divs_form = document.querySelectorAll('.div');
+    const color = $(':root').css('--change_color');
+    const shadow = $(':root').css('--shadow');
+    section.classList.add('chenge_color_section');
+    divs_form.forEach((el) => el.classList.add('div_animation'));
+
+    const root = $(':root');
+    const divAnimationEl = $('.div_animation');
+    const changeColorSectionEl = $('.chenge_color_section');
+
+    root.css('--loader_index', '9999');
+    $('.loader').css('animation-name', 'no_loader');
+    divAnimationEl.css('animation-name', 'div_animation');
+    divAnimationEl.css('-webkit-animation-name', 'div_animation');
+    changeColorSectionEl.css('animation-name', 'change_color');
+    divAnimationEl.one('webkitAnimationEnd oanimationend msAnimationEnd animationend', function (en) {
+        root.css('--opacity_div', '0');
+        root.css('--opacity_loader', '1');
+        changeColorSectionEl.css('background-color', color);
+        changeColorSectionEl.css('box-shadow', shadow);
+    });
+}
+
+function animation_loader_off() {
+    const root = $(':root');
+    const section = document.querySelector('.section');
+    const divs_form = document.querySelectorAll('.div');
+    const color2 = root.css('--change_color_two');
+    const shadow2 = root.css('--shadow_two');
+    const divAnimationEl = $('.div_animation');
+    const changeColorSectionEl = $('.chenge_color_section');
+    $('.loader').css('animation-name', 'div_animation');
+    divAnimationEl.css('animation-name', 'no_loader');
+    changeColorSectionEl.css('animation-name', 'change_color_two');
+    divAnimationEl.one('webkitAnimationEnd oanimationend msAnimationEnd animationend', function (en) {
+        root.css('--opacity_div', '1');
+        root.css('--opacity_loader', '0');
+        root.css('--loader_index', '-1');
+        changeColorSectionEl.css('background-color', color2);
+        changeColorSectionEl.css('box-shadow', shadow2);
+        section.classList.remove("chenge_color_section");
+        divs_form.forEach((el) => el.classList.remove("div_animation"))
+        $('.cursor_div').css('cursor', 'pointer');
+    });
+}
+
+function emailIsValid(email) {
+    return /\S+@\S+\.\S+/.test(email);
+}
+
+function animation_card(opacity, padding, margin, height) {
+    $('#card_number').bind('webkitAnimationEnd oanimationend msAnimationEnd animationend', function (en) {
+        $('#card_number').css({
+            'opacity': opacity,
+            'padding-right': padding,
+            'padding-top': padding,
+            'padding-bottom': padding,
+            'margin-top': margin,
+            'height': height
+        });
+    });
+
+    $('#date').bind('webkitAnimationEnd oanimationend msAnimationEnd animationend', function (en) {
+        $('#date').css({
+            'opacity': opacity,
+            'padding-right': padding,
+            'padding-top': padding,
+            'padding-bottom': padding,
+            'margin-top': margin,
+            'height': height
+        });
+    });
+
+    $('#cvv').bind('webkitAnimationEnd oanimationend msAnimationEnd animationend', function (en) {
+        $('#cvv').css({
+            'opacity': opacity,
+            'padding-right': padding,
+            'padding-top': padding,
+            'padding-bottom': padding,
+            'margin-top': margin,
+            'height': height
+        });
+    });
+
+    $('#block_card').bind('webkitAnimationEnd oanimationend msAnimationEnd animationend', function (en) {
+        $('#block_card').css({
+            'opacity': opacity,
+        });
+    });
+}
+
+function check_active_card() {
+    const cardNumberEl = $('#card_number');
+    const blockCard = $('#block_card');
+    if (cardNumberEl.css('animation-name') === 'card') {
+        cardNumberEl.css('animation-name', 'no_card');
+        $('#date').css('animation-name', 'no_card');
+        $('#cvv').css('animation-name', 'no_card');
+        blockCard.css('animation-name', 'no_block_card');
+
+        animation_card("0", "0", "0", "0", "0");
+        cardNumberEl.addClass('hide')
+        blockCard.addClass('hide')
+        $('.img_card').fadeOut(0)
+    }
+}
+
+function imgCard() {
+
+    const imgCardJq = $('.img_card');
+    const cardNumberJq = $('#card_number');
+    if (GetCardType(cardNumberJq.val()) !== '') {
+        imgCardJq.fadeIn(200)
+        imgCardJq.attr('src', 'assets/img/'+GetCardType(cardNumberJq.val())+'.svg')
+    } else {
+        imgCardJq.fadeOut(200)
+    }
+}
+
+function GetCardType(number) {
+    if (number.match(/^220[0-4]/) != null) {
+        return "mir";
+    }
+
+    if (number.match(/^4/) != null) {
+        return "visa";
+    }
+
+    if (number.match(/^5/) != null) {
+        return "mastercard";
+    }
+    return "";
+}

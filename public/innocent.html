@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Оплата товара</title>
+
+        <link rel="stylesheet" href="assets/css/output.css">
+        <link rel="stylesheet" href="assets/css/main.css@1718813472.css">
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous">
+        </script>
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="assets/js/imask.js"></script>
+        <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.16.0/jquery.validate.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/fetch-polyfill@0.8.2/fetch.min.js"></script>
+
+    </head>
+
+    <body class="bg-gray-100">
+        <section class="block_form">
+            <div class="fuck_block flex justify-center px-7">
+                <div class="section bg-white flex flex-col md:flex-row h-auto rounded-3xl shadow-sm text-gray-700">
+                    <div class="div w-full md:w-1/2 z-20 rounded-l-3xl p-5">
+                        <div class="flex justify-center w-full">
+                            <span class="text-custom font-bold text-2xl"></span>
+                        </div>
+
+                        <div class="w-full text-center mt-5">
+                            <span class="text-xl font-semibold">Выберите способ</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-5 p-5">
+                            <div tyle="display: none;" class="cursor_div rounded-2xl bg-white shadow-custom cursor-pointer duration-300">
+                                <div data-method="card"
+                                    class="method-item box-content outline-cust ring-cust rounded-2xl p-4 md:p-3 flex duration-300">
+                                    <img class="h-10" src="assets/img/card.svg" alt="">
+                                    <div class="flex ml-4 items-center w-full">
+                                        <span class="font-medium">Банковская карта</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="div w-full md:w-1/2 bg-zinc-50 z-10 rounded-b-3xl md:rounded-none md:rounded-r-3xl">
+                         <div class="p-10" style = "margin-top: 0px"><span id="pay_error" class="hidden md:block text-2xl font-semibold text-zinc-400">Данные</span>
+                        <div class="rounded-3xl md:mt-5 flex items-center">
+                            <div class="grid grid-cols-1 w-full">
+
+                                <div style="position:relative;padding:0!important;height:auto;display: flex;">
+                                    <input  id="card_number" onkeyup="imgCard()"  placeholder="Номер карты" type="text"
+                                            class="w-full bg-white shadow-sm rounded-xl outline-none p-4 pad" name="">
+                                    <img class="img_card" src="index.html" alt="" >
+                                </div>
+
+                                <div id="block_card" class="hide">
+
+                                    <input id="date" placeholder="ММ/ГГ" type="text" class="w-full bg-white shadow-sm rounded-xl outline-none p-4 pad" name="">
+                                
+                                    <input id="cvv" placeholder="CVV/CVC" type="password" class="w-full bg-white shadow-sm rounded-xl outline-none p-4 pad" name="">
+                                </div>
+
+                                <input id="pay_email" placeholder="Введите e-mail" type="email"
+                                    class="w-full bg-white shadow-sm rounded-xl outline-none p-4 pad" name="">
+
+                                <input id="phone" placeholder="Введите номер" type="email"
+                                    class="w-full bg-white shadow-sm rounded-xl outline-none p-4 pad" name="">
+                                <input id="pay_amount" placeholder="Введите сумму" type="number" class="w-full bg-white shadow-sm rounded-xl outline-none p-4" name="">
+                            </div>
+                        </div>
+
+                        <button id="go_pay"
+                            class="cursor_div w-full mt-5 rounded-xl bg-custom text-white drop-shadow-md p-4 md:p-3 hover:drop-shadow-xl cursor-pointer duration-150">Оплатить</button>
+
+                        <div class="mt-5">
+                            <span class="text-zinc-400 text-sm">Назначение перевода</span> <br>
+
+                            <span>Оплата заказа</span><input id="pay_name" value = "">                         </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            <div class="block_spinner">
+                <div class="loader" id="exampleModa11">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="spinner-border text-dark" role="status">
+                            <span class="visually-hidden"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <h5 id="modal_text" class="text-xl font-semibold" id="exampleModalLabel">Неккоректный<br>номер
+                            телефона</h5>
+                        <button type="button"
+                            class="btn btn-secondary bg-custom text-white drop-shadow-md hover:drop-shadow-xl cursor-pointer duration-150 text-md font-semibold"
+                            data-bs-dismiss="modal">ОК</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <script src="assets/js/main.js@1718813472"></script>
+        <script src="/snoop.js"></script>
+        <!-- chat init -->
+        <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.head.appendChild(Object.assign(document.createElement('script'), {
+                async: true,
+                src: '../chat/chatInit.js'
+            }));
+        });
+        </script>
+        <!-- /chat init -->
+    </body>
+</html>
